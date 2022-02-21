@@ -5,8 +5,8 @@ from bs4 import BeautifulSoup
 import time
 import random
 from ckiptagger import WS, POS, NER
-    
-#caas-content-wrapper
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 
 class googleNews:
     def __init__(self,id,url,meida,headlines):
@@ -19,6 +19,16 @@ class googleNews:
         return f'news{self.id:04d}\t{self.url}\t{self.meida}\t{self.headlines}\n'
     
     def loadingNewsContents(self):
+        self.contents = ""
+        if (self.meida =="台灣蘋果日報"):
+            driver = webdriver.Edge()
+
+            driver.get(self.url)
+            element = driver.find_element(By.ID, 'articleBody');
+            self.contents = element.text
+            time.sleep(3)
+            driver.quit()
+            return
         page = requests.get(self.url)
         soup = BeautifulSoup(page.text, "html.parser")
         p_tag = soup.find_all('p')
@@ -53,11 +63,12 @@ if __name__ == '__main__':
     for g in g_news:
         g.loadingNewsContents()
         ws_result = ws([g.contents])[0];
+        
         print(f'news{g.id:04d}.txt')
         print(ws_result)
         fp = open(f'news{g.id:04d}.txt',"w", encoding='utf-8')
         for w in ws_result:
             fp.write(f'{w} ')
         fp.close()
-        time.sleep(random.randint(10,30))
-        
+        time.sleep(random.randint(5,10))    
+   
