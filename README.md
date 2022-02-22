@@ -41,3 +41,6 @@ python3 CKIP_data_download.py
 ```
 python3 NLP_Qualification_Homework.py
 ```
+
+## Demo
+### **Vedio Link** : https://youtu.be/8JoDizBiL2Q  
