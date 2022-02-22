@@ -8,14 +8,17 @@ from bs4 import BeautifulSoup
 from ckiptagger import WS, POS, NER
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.ie.options import ElementScrollBehavior
+from selenium.webdriver.edge.options import Options
+
+options = Options()
+options.add_argument("headless")
 
 class googleNews:
     def __init__(self,id,url,meida,headlines):
         self.url = url
-        self.meida = meida;
-        self.headlines = headlines;
-        self.id = id;
+        self.meida = meida
+        self.headlines = headlines
+        self.id = id
 
     def __repr__(self):
         return f'news{self.id:04d}\t{self.url}\t{self.meida}\t{self.headlines}\n'
@@ -23,26 +26,26 @@ class googleNews:
     def loadingNewsContents(self):
         self.contents = ""
         if (self.meida =="台灣蘋果日報"):
-            driver = webdriver.Edge()
+            driver = webdriver.Edge(options = options)
             driver.get(self.url)
             time.sleep(random.randint(5,10))  
-            element = driver.find_element(By.ID, 'articleBody');
+            element = driver.find_element(By.ID, 'articleBody')
             self.contents = element.text
             driver.quit()
             return
         if (self.meida =="Yahoo奇摩新聞"):
-            driver = webdriver.Edge()
+            driver = webdriver.Edge(options = options)
             driver.get(self.url)
             time.sleep(random.randint(5,10))    
-            element = driver.find_element(By.CLASS_NAME, 'caas-body');
+            element = driver.find_element(By.CLASS_NAME, 'caas-body')
             self.contents = element.text
             driver.quit()
             return
         if (self.meida =="新頭殼"):
-            driver = webdriver.Edge()
+            driver = webdriver.Edge(options = options)
             driver.get(self.url)
             time.sleep(random.randint(5,10))    
-            element = driver.find_elements_by_xpath('//*[@id="news_content"]/div/div[2]');
+            element = driver.find_elements(By.XPATH,'//*[@id="news_content"]/div/div[2]')
             self.contents = element[0].text
             driver.quit()
             return
@@ -70,7 +73,7 @@ class googleNews:
         
         
         if (self.contents ==""):
-            driver = webdriver.Edge()
+            driver = webdriver.Edge(options = options)
             driver.get(self.url)
             time.sleep(random.randint(5,10))    
             element = driver.find_elements_by_xpath('//*[@id="description"]/yt-formatted-string');
@@ -81,7 +84,7 @@ class googleNews:
         #print(self.contents)
     
 if __name__ == '__main__':
-    os.chdir('.\\')
+    os.chdir('.')
     [os.remove(f) for f in os.listdir() if f.endswith(".txt")]
     #CKIP initial
     ws = WS("./data")
@@ -107,7 +110,7 @@ if __name__ == '__main__':
     # loading news contents
     for g in g_news:
         g.loadingNewsContents()
-        ws_result = ws([g.contents])[0];
+        ws_result = ws([g.contents])[0]
         
         print(f'news{g.id:04d}.txt')
         print(ws_result)
