@@ -24,7 +24,6 @@ class googleNews:
         return f'news{self.id:04d}\t{self.url}\t{self.meida}\t{self.headlines}\n'
     
     def loadingNewsContents(self):
-        self.contents = ""
         if (self.meida =="台灣蘋果日報"):
             driver = webdriver.Edge(options = options)
             driver.get(self.url)
@@ -52,18 +51,28 @@ class googleNews:
         if (self.meida =="自由時報電子報"):
             page = requests.get(self.url)
             soup = BeautifulSoup(page.text, "html.parser")
-            self.contents=soup.select_one('div[class^="text boxTitle boxText"]').text
-            return
+            article=soup.select_one('div[class^="text boxTitle boxText"]')
+            if (article is None):
+                article=soup.select_one('div[class^="whitecon"]')
+            if (not article is None):
+                self.contents = article.text
+                return
         if (self.meida == "ETtoday新聞雲"):
             page = requests.get(self.url)
             soup = BeautifulSoup(page.text, "html.parser")
-            self.contents=soup.select_one('div[class^="story"]').text
-            return
+            article=soup.select_one('div[class^="story"]')
+            if (not article is None):
+                self.contents = article.text
+                return
         if (self.meida == "UDN 聯合新聞網"):
             page = requests.get(self.url)
             soup = BeautifulSoup(page.text, "html.parser")
-            self.contents=soup.select_one('section[class^="article-content__editor"]').text
-            return
+            article=soup.select_one('section[class^="article-content__editor"]')
+            if (not article is None):
+                self.contents = article.text
+                return
+        
+        self.contents = ""
         page = requests.get(self.url)
         soup = BeautifulSoup(page.text, "html.parser")
         p_tag = soup.find_all('p')
@@ -71,12 +80,11 @@ class googleNews:
             for p in p_tag:
                 self.contents += p.text
         
-        
         if (self.contents ==""):
             driver = webdriver.Edge(options = options)
             driver.get(self.url)
             time.sleep(random.randint(5,10))    
-            element = driver.find_elements_by_xpath('//*[@id="description"]/yt-formatted-string');
+            element = driver.find_elements(By.XPATH, '//*[@id="description"]/yt-formatted-string')
             if element != []:
                 self.contents= element[0].text
             driver.quit()
