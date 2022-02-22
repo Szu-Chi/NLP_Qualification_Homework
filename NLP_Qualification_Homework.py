@@ -1,12 +1,14 @@
 ﻿#!/usr/bin/python
 #-*- coding: utf-8 -*-
 import requests
-from bs4 import BeautifulSoup
+import os
 import time
 import random
+from bs4 import BeautifulSoup
 from ckiptagger import WS, POS, NER
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.ie.options import ElementScrollBehavior
 
 class googleNews:
     def __init__(self,id,url,meida,headlines):
@@ -22,22 +24,65 @@ class googleNews:
         self.contents = ""
         if (self.meida =="台灣蘋果日報"):
             driver = webdriver.Edge()
-
             driver.get(self.url)
+            time.sleep(random.randint(5,10))  
             element = driver.find_element(By.ID, 'articleBody');
             self.contents = element.text
-            time.sleep(3)
             driver.quit()
+            return
+        if (self.meida =="Yahoo奇摩新聞"):
+            driver = webdriver.Edge()
+            driver.get(self.url)
+            time.sleep(random.randint(5,10))    
+            element = driver.find_element(By.CLASS_NAME, 'caas-body');
+            self.contents = element.text
+            driver.quit()
+            return
+        if (self.meida =="新頭殼"):
+            driver = webdriver.Edge()
+            driver.get(self.url)
+            time.sleep(random.randint(5,10))    
+            element = driver.find_elements_by_xpath('//*[@id="news_content"]/div/div[2]');
+            self.contents = element[0].text
+            driver.quit()
+            return
+        if (self.meida =="自由時報電子報"):
+            page = requests.get(self.url)
+            soup = BeautifulSoup(page.text, "html.parser")
+            self.contents=soup.select_one('div[class^="text boxTitle boxText"]').text
+            return
+        if (self.meida == "ETtoday新聞雲"):
+            page = requests.get(self.url)
+            soup = BeautifulSoup(page.text, "html.parser")
+            self.contents=soup.select_one('div[class^="story"]').text
+            return
+        if (self.meida == "UDN 聯合新聞網"):
+            page = requests.get(self.url)
+            soup = BeautifulSoup(page.text, "html.parser")
+            self.contents=soup.select_one('section[class^="article-content__editor"]').text
             return
         page = requests.get(self.url)
         soup = BeautifulSoup(page.text, "html.parser")
         p_tag = soup.find_all('p')
-        self.contents = ""
-        for p in p_tag:
-            self.contents += p.text
+        if (p_tag != []):
+            for p in p_tag:
+                self.contents += p.text
+        
+        
+        if (self.contents ==""):
+            driver = webdriver.Edge()
+            driver.get(self.url)
+            time.sleep(random.randint(5,10))    
+            element = driver.find_elements_by_xpath('//*[@id="description"]/yt-formatted-string');
+            if element != []:
+                self.contents= element[0].text
+            driver.quit()
+            
         #print(self.contents)
     
 if __name__ == '__main__':
+    os.chdir('.\\')
+    [os.remove(f) for f in os.listdir() if f.endswith(".txt")]
     #CKIP initial
     ws = WS("./data")
     # scraping news form google_news_url
@@ -70,5 +115,4 @@ if __name__ == '__main__':
         for w in ws_result:
             fp.write(f'{w} ')
         fp.close()
-        time.sleep(random.randint(5,10))    
-   
+        time.sleep(random.randint(3,5))   
